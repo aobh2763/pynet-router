@@ -21,9 +21,11 @@ for row in matrix:
     
 path = net.create_path([0, 1, 3], 4)
 if path is not None:
-    path.print_path()
+    print(path)
+    print(path.path_cost())
     
     
-path = net.create_path([3, 1, 3], 4)
+path = net.create_path([3, 1, 0, 2, 4], 4)
 if path is not None:
-    path.print_path()
+    print(path)
+    print(path.path_cost())

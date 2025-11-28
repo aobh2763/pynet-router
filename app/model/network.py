@@ -61,7 +61,7 @@ class Network:
     
     def print_routers(self) -> None:
         for router in self.routers:
-            router.print_router()
+            print(router)
     
     def get_link(self,
                  idA: int,

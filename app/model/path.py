@@ -8,7 +8,7 @@ class Path:
                  source: Router,
                  destination: Router,
                  security_requirement: int,
-                 links: list[Link] = []):
+                 links: list[Link]):
         self.id = id
         self.name = name
         self.source = source
@@ -51,3 +51,25 @@ class Path:
             return False
 
         return True
+
+    def __str__(self) -> str:
+        if (self.is_valid() == False):
+            return f"Path ID: {self.id} is invalid."
+        
+        routers = [self.source.name]
+        current = self.source
+        for link in self.links:
+            next_router = link.routerA if link.routerB == current else link.routerB
+            routers.append(next_router.name)
+            current = next_router
+
+        links_str = " -> ".join(routers)
+        return (f"Path ID: {self.id}, Name: {self.name}, Source: {self.source.name}, "
+                f"Destination: {self.destination.name}, Security Requirement: {self.security_requirement}, "
+                f"Links: [{links_str}]")
+        
+    def path_cost(self) -> int:
+        total_cost = 0
+        for link in self.links:
+            total_cost += link.cost
+        return total_cost
