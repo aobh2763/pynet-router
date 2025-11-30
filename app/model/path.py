@@ -68,8 +68,8 @@ class Path:
                 f"Destination: {self.destination.name}, Security Requirement: {self.security_requirement}, "
                 f"Links: [{links_str}]")
         
-    def path_cost(self) -> int:
-        total_cost = 0
+    def path_cost(self) -> float:
+        total_cost = 0.0
         for link in self.links:
             total_cost += link.cost
         return total_cost

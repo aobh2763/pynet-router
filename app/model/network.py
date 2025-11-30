@@ -81,8 +81,8 @@ class Network:
         
         return None
     
-    def get_network_matrix(self) -> list[list[int]]:
-        network_matrix = [[0 for j in range(self.router_count)]for i in range(self.router_count)]
+    def get_network_matrix(self) -> list[list[float]]:
+        network_matrix = [[0.0 for j in range(self.router_count)]for i in range(self.router_count)]
         
         for i in range(self.router_count):
             for j in range(self.router_count):
@@ -92,8 +92,6 @@ class Network:
                         network_matrix[i][j] = link.cost
                     else:
                         network_matrix[i][j] = float('inf')
-                else:
-                    network_matrix[i][j] = 0
         
         return network_matrix
     

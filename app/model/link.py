@@ -4,7 +4,7 @@ class Link:
     def __init__(self,
                  id: int,
                  name: str,
-                 cost: int,
+                 cost: float,
                  routerA: Router,
                  routerB: Router):
         self.id = id
