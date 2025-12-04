@@ -8,12 +8,14 @@ class Path:
                  source: Router,
                  destination: Router,
                  security_requirement: int,
+                 firewall_required: bool,
                  links: list[Link]):
         self.id = id
         self.name = name
         self.source = source
         self.destination = destination
         self.security_requirement = security_requirement
+        self.firewall_required = firewall_required
         self.links = links
     
     def add_link(self, link: Link) -> None:
@@ -65,7 +67,7 @@ class Path:
 
         links_str = " -> ".join(routers)
         return (f"Path ID: {self.id}, Name: {self.name}, Source: {self.source.name}, "
-                f"Destination: {self.destination.name}, Security Requirement: {self.security_requirement}, "
+                f"Destination: {self.destination.name}, Security Requirement: {self.security_requirement}, Firewall Required: {self.firewall_required}, "
                 f"Links: [{links_str}]")
         
     def path_cost(self) -> float:

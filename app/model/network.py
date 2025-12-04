@@ -13,13 +13,19 @@ class Network:
         self.link_count = 0
         self.path_count = 0
         
-    def add_router(self, name, x, y, security_level) -> Router:
+    def add_router(self,
+                   name: str,
+                   x: float,
+                   y: float,
+                   security_level: int,
+                   firewall_enabled: bool) -> Router:
         new_router = Router(
             self.router_count,
             name,
             x,
             y,
-            security_level
+            security_level,
+            firewall_enabled
         )
         
         self.routers.add(new_router)
@@ -39,6 +45,9 @@ class Network:
              idB: int,
              cost: float,
              name: str = "") -> bool:
+        if (self.get_link(idA, idB) is not None):
+            return False
+        
         routerA = self.get_router_by_id(idA)
         routerB = self.get_router_by_id(idB)
         
@@ -97,7 +106,8 @@ class Network:
     
     def create_path(self,
                     router_ids: list[int],
-                    security_requirement: int) -> Path | None:
+                    security_requirement: int,
+                    firewall_required: bool) -> Path | None:
         if (len(router_ids) == 0):
             return None
         
@@ -109,7 +119,8 @@ class Network:
                         f"Path from {router.name} to {router.name}",
                         router,
                         router,
-                        security_requirement)
+                        security_requirement,
+                        firewall_required)
         
         source = self.get_router_by_id(router_ids[0])
         destination = self.get_router_by_id(router_ids[-1])
@@ -129,6 +140,7 @@ class Network:
                         source,
                         destination,
                         security_requirement,
+                        firewall_required,
                         path_links)
         
         self.path_count += 1

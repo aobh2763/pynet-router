@@ -1,31 +1,31 @@
 from app.model import Network
+from app.controller import ModelBuilder, ModelSolver
 
 net = Network(1, "MyNet")
 
-net.add_router("A", 9.9, 2.4, 4)
-net.add_router("B", 9.9, 2.4, 4)
-net.add_router("C", 9.9, 2.4, 4)
-net.add_router("D", 9.9, 2.4, 4)
-net.add_router("E", 9.9, 2.4, 4)
-
+net.add_router("A", 9.9, 2.4, 4, True)
+net.add_router("B", 9.9, 2.4, 4, False)
+net.add_router("C", 9.9, 2.4, 4, True)
+net.add_router("D", 9.9, 2.4, 4, True)
+net.add_router("E", 9.9, 2.4, 4, True)
 net.print_routers()
 
 net.link(0, 1, 1.0)
 net.link(0, 2, 5.0)
 net.link(1, 3, 6.0)
 net.link(2, 4, 8.0)
+net.link(2, 3, 4.0)
 
 matrix = net.get_network_matrix()
 for row in matrix:
     print(str(row) + ",")
     
-path = net.create_path([0, 1, 3], 4)
+path = net.create_path([0, 1, 3], 4, False)
 if path is not None:
     print(path)
     print(path.path_cost())
     
-    
-path = net.create_path([3, 1, 0, 2, 4], 4)
+path = net.create_path([3, 1, 0, 2, 4], 4, False)
 if path is not None:
     print(path)
     print(path.path_cost())
@@ -46,3 +46,12 @@ loaded_net.print_routers()
 matrix = loaded_net.get_network_matrix()
 for row in matrix:
     print(str(row) + ",")
+    
+model = ModelBuilder(net, 4, True)
+
+model.set_source(0)
+model.set_destination(3)
+gurobi_model = model.build_model()
+
+solver = ModelSolver(gurobi_model)
+solver.test()

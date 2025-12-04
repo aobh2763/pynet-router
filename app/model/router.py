@@ -4,12 +4,14 @@ class Router:
                  name: str,
                  x: float,
                  y: float,
-                 security_level: int) -> None:
+                 security_level: int,
+                 firewall_enabled: bool) -> None:
         self.id = id
         self.name = name
         self.x = x
         self.y = y
         self.security_level = security_level
+        self.firewall_enabled = firewall_enabled
         self.links = []
         
     def __eq__(self, other: object) -> bool:
@@ -25,4 +27,4 @@ class Router:
         self.links.append(link)
         
     def __str__(self) -> str:
-        return f"Router ID: {self.id}, Name: {self.name}, Position: ({self.x}, {self.y}), Security Level: {self.security_level}"
+        return f"Router ID: {self.id}, Name: {self.name}, Position: ({self.x}, {self.y}), Security Level: {self.security_level}, Firewall Enabled: {self.firewall_enabled}"
