@@ -77,7 +77,7 @@ class ModelBuilder():
                 if (not self.is_routable(other)):
                     continue
                 
-                vars[(router.id, other.id)] = self.model.addVar(vtype = GRB.BINARY, name = f"l{router.id}{other.id}")
+                vars[(router.id, other.id)] = self.model.addVar(vtype = GRB.BINARY, name = f"l{router.id}-{other.id}")
         
         # Creating the objective function
         for router in self.network.routers:
