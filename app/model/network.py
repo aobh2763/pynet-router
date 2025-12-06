@@ -56,6 +56,22 @@ class Network:
         self.router_count += 1
         
         return new_router
+
+    def remove_router(self, router: Router) -> bool:
+        """Removes a router from the network.
+
+        Args:
+            router (Router): The router to be removed.
+            
+        Returns:
+            bool: True if the router was removed, False otherwise.
+        """
+        
+        if router in self.routers:
+            self.routers.remove(router)
+            return True
+        
+        return False
         
     def get_router_by_id(self, id: int) -> Router:
         """Retrieves a router by its unique identifier.
