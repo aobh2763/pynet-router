@@ -8,3 +8,10 @@ class RouterLinker(QDialog):
         self.ui.setupUi(self)
         
         self.setFixedSize(self.size())
+    
+    def get_data(self):
+        return {
+            "router1": self.ui.router_a_input.value(),
+            "router2": self.ui.router_b_input.value(),
+            "cost": self.ui.cost_input.value()
+        }

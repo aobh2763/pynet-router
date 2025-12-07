@@ -68,6 +68,9 @@ class Network:
         """
         
         if router in self.routers:
+            for link in router.links:
+                self.unlink(link.routerA.id, link.routerB.id)
+                
             self.routers.remove(router)
             return True
         
@@ -108,6 +111,9 @@ class Network:
         if (routerA is None or routerB is None):
             return False
         
+        if (routerA == routerB):
+            return False
+        
         if (name == ""):
             name = f"{routerA.name} - {routerB.name}" 
         new_link = Link(self.link_count,
@@ -120,6 +126,32 @@ class Network:
         routerB.add_link(new_link)
         
         self.link_count += 1
+        return True
+    
+    def unlink(self, idA: int, idB: int) -> bool:
+        """Removes the link between two routers in the network.
+        
+        Args:
+            idA (int): The unique identifier of the first router.
+            idB (int): The unique identifier of the second router.
+            
+        Returns:
+            bool: True if the link was removed successfully, False otherwise.
+        """
+        link = self.get_link(idA, idB)
+        
+        if (link is None):
+            return False
+        
+        routerA = self.get_router_by_id(idA)
+        routerB = self.get_router_by_id(idB)
+        
+        if (routerA is None or routerB is None):
+            return False
+        
+        routerA.remove_link(link)
+        routerB.remove_link(link)
+        
         return True
     
     def print_routers(self):

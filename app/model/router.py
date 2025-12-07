@@ -61,6 +61,15 @@ class Router:
         """
         self.links.append(link)
         
+    def remove_link(self, link):
+        """Removes a link from the router's list of links.
+        
+        Args:
+            link: The link to be removed.
+        """
+        if link in self.links:
+            self.links.remove(link)
+        
     def __str__(self) -> str:
         """Returns a string representation of the router.
         

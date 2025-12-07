@@ -64,3 +64,11 @@ class Link:
             return self.routerA
         else:
             return None
+    
+    def __str__(self) -> str:
+        """Returns a string representation of the link.
+
+        Returns:
+            str: A string describing the link.
+        """
+        return f"Link {self.id}: {self.name} (Cost: {self.cost}) between Router {self.routerA.id} and Router {self.routerB.id}"
