@@ -5,6 +5,8 @@ from ..router_editor import RouterEditor
 from ..router_linker import RouterLinker
 from ..constraint_setter import ConstraintSetter
 
+from .path_finder_thread import PathFinderThread
+
 from app.model import Network, Link
 
 from app.io import FileReader, FileWriter
@@ -314,19 +316,26 @@ class MainHandlers:
             self.parent.ui.textBrowser.setText("No constraints set.")
             return
         
-        self.builder.build_model()
-        
-        self.solver = ModelSolver(self.builder)
-        
-        path = self.solver.create_path()
+        self.parent.ui.find_route_button.setDisabled(True)
+        self.parent.ui.actionFind_Route.setDisabled(True)
+        self.parent.ui.textBrowser.setText("Finding path, please wait...")
+
+        self.thread = PathFinderThread(self.builder)
+        self.thread.finished.connect(self.on_path_found)
+        self.thread.start()
+
+    def on_path_found(self, path):
+        self.parent.ui.find_route_button.setDisabled(False)
+        self.parent.ui.actionFind_Route.setDisabled(False)
         
         if path is None:
-            alert = QMessageBox.information(self.parent, "Warning", "No path could be found with the given constraints.")
+            QMessageBox.information(self.parent, "Warning", "No path could be found with the given constraints.")
+            self.parent.ui.textBrowser.setText("No path found.")
         else:
             self.parent.latest_path = path
             self.parent.ui.textBrowser.setText(f"Path found:\n{path}\nWith a total cost of {path.path_cost()}")
             self.graphics_handler.update_graphics(self.network, path)
-            alert = QMessageBox.information(self.parent, "Success", f"Path found with a total cost of {path.path_cost()}")
+            QMessageBox.information(self.parent, "Success", f"Path found with a total cost of {path.path_cost()}")
     
     def display_latest_path_clicked(self):
         path = self.parent.latest_path

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QApplication
+from PySide6.QtWidgets import QMainWindow, QApplication, QMessageBox
 from .ui import UI_MainWindow
 from .handlers import GraphicsHandler, MainHandlers
 
@@ -65,3 +65,15 @@ class MainWindow(QMainWindow):
         self.ui.actionDisplay_Routers.setDisabled(True)
         self.ui.actionDisplay_Latest_Path.setDisabled(True)
         self.ui.actionHide_Latest_Path.setDisabled(True)
+    
+    def closeEvent(self, event):
+        reply = QMessageBox.question(
+            self,
+            "Exit",
+            "Are you sure you want to exit?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
