@@ -66,15 +66,16 @@ class Network:
         Returns:
             bool: True if the router was removed, False otherwise.
         """
-        
-        if router in self.routers:
-            for link in router.links:
-                self.unlink(link.routerA.id, link.routerB.id)
-                
-            self.routers.remove(router)
-            return True
-        
-        return False
+        if router not in self.routers:
+            return False
+
+        links_to_delete = list(router.links)
+
+        for link in links_to_delete:
+            self.unlink(link.routerA.id, link.routerB.id)
+
+        self.routers.remove(router)
+        return True
         
     def get_router_by_id(self, id: int) -> Router:
         """Retrieves a router by its unique identifier.
@@ -139,16 +140,12 @@ class Network:
             bool: True if the link was removed successfully, False otherwise.
         """
         link = self.get_link(idA, idB)
-        
-        if (link is None):
+        if link is None:
             return False
-        
-        routerA = self.get_router_by_id(idA)
-        routerB = self.get_router_by_id(idB)
-        
-        if (routerA is None or routerB is None):
-            return False
-        
+
+        routerA = link.routerA
+        routerB = link.routerB
+
         routerA.remove_link(link)
         routerB.remove_link(link)
         

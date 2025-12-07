@@ -199,6 +199,7 @@ class GraphicsHandler:
         cost_item = QGraphicsTextItem(str(link.cost))
         font = QFont()
         font.setBold(True)
+        font.setPointSize(12)
         cost_item.setFont(font)
         cost_item.setDefaultTextColor(Qt.black)
 
@@ -214,8 +215,55 @@ class GraphicsHandler:
                 if link.routerA == router:
                     self.draw_link(link)
     
-    def update_graphics(self, network):
+    def draw_path(self, path):
+        if path is None:
+            return
+        
+        if not path.is_valid():
+            return
+
+        routers = [path.source]
+        current = path.source
+
+        for link in path.links:
+            next_router = link.routerA if link.routerB == current else link.routerB
+            routers.append(next_router)
+            current = next_router
+
+        # ==== DRAW RED POLYLINE ====
+        pen = QPen(Qt.red)
+        pen.setWidth(6)
+
+        for i in range(len(routers) - 1):
+            r1 = routers[i]
+            r2 = routers[i + 1]
+
+            x1 = self.origin_x + r1.x * self.grid_size
+            y1 = self.origin_y - r1.y * self.grid_size
+            x2 = self.origin_x + r2.x * self.grid_size
+            y2 = self.origin_y - r2.y * self.grid_size
+
+            self.scene.addLine(x1, y1, x2, y2, pen)
+
+        # ==== DRAW RED HIGHLIGHT CIRCLES AROUND ROUTERS ====
+        router_pen = QPen(Qt.red)
+        router_pen.setWidth(4)
+
+        radius = 24  # slightly bigger than router nodes
+
+        for r in routers:
+            x = self.origin_x + r.x * self.grid_size
+            y = self.origin_y - r.y * self.grid_size
+
+            self.scene.addEllipse(
+                x - radius, y - radius,
+                radius * 2, radius * 2,
+                router_pen
+            )
+    
+    def update_graphics(self, network, latest_path = None):
         self.draw_grid()
         
         self.draw_links(network)
+        self.draw_path(latest_path)
         self.draw_routers(network)

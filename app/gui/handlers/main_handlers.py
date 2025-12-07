@@ -3,19 +3,24 @@ from ..network_creator import NetworkCreator
 from ..router_selector import RouterSelector
 from ..router_editor import RouterEditor
 from ..router_linker import RouterLinker
+from ..constraint_setter import ConstraintSetter
 
 from app.model import Network, Link
 
 from app.io import FileReader, FileWriter
 
-from PySide6.QtWidgets import QListWidgetItem, QFileDialog
+from app.controller import ModelBuilder, ModelSolver
+
+from PySide6.QtWidgets import QListWidgetItem, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt
 
 class MainHandlers:
-    def __init__(self, parent, network: Network, graphics_handler):
+    def __init__(self, parent, network: Network, graphics_handler, builder: ModelBuilder, solver: ModelSolver):
         self.parent = parent
         self.network = network
         self.graphics_handler = graphics_handler
+        self.builder = builder
+        self.solver = solver
     
     def display_routers(self):
         text = "Routers in the network:\n"
@@ -26,6 +31,18 @@ class MainHandlers:
         self.parent.ui.textBrowser.setText(text)
         
     def new_network_clicked(self):
+        if self.network is not None:
+            reply = QMessageBox.question(
+                self.parent,
+                "Confirm",
+                "Are you sure you want to create a new network?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            
+            if reply == QMessageBox.No:
+                return
+        
         dialog = NetworkCreator()
         
         if not dialog.exec():
@@ -43,6 +60,7 @@ class MainHandlers:
         
         self.network = Network(0, data["name"])
         self.parent.network = self.network
+        self.graphics_handler.update_graphics(self.network)
         
         self.parent.ui.textBrowser.setText("New network created.")
         
@@ -52,6 +70,18 @@ class MainHandlers:
         self.parent.ui.delete_router_button.setDisabled(False)
         self.parent.ui.link_routers_button.setDisabled(False)
         self.parent.ui.set_constraints_button.setDisabled(False)
+        self.parent.ui.find_route_button.setDisabled(True)
+        
+        self.parent.ui.actionAdd_Router.setDisabled(False)
+        self.parent.ui.actionEdit_Router.setDisabled(False)
+        self.parent.ui.actionDelete_Router.setDisabled(False)
+        self.parent.ui.actionLink_Routers.setDisabled(False)
+        self.parent.ui.actionSave_Network.setDisabled(False)
+        self.parent.ui.actionSet_Constraints.setDisabled(False)
+        self.parent.ui.actionFind_Route.setDisabled(True)
+        self.parent.ui.actionDisplay_Routers.setDisabled(False)
+        self.parent.ui.actionDisplay_Latest_Path.setDisabled(False)
+        self.parent.ui.actionHide_Latest_Path.setDisabled(False)
         
     def add_router_clicked(self):
         dialog = RouterCreator()
@@ -214,6 +244,99 @@ class MainHandlers:
         self.parent.ui.delete_router_button.setDisabled(False)
         self.parent.ui.link_routers_button.setDisabled(False)
         self.parent.ui.set_constraints_button.setDisabled(False)
+        self.parent.ui.find_route_button.setDisabled(True)
+        
+        self.parent.ui.actionAdd_Router.setDisabled(False)
+        self.parent.ui.actionEdit_Router.setDisabled(False)
+        self.parent.ui.actionDelete_Router.setDisabled(False)
+        self.parent.ui.actionLink_Routers.setDisabled(False)
+        self.parent.ui.actionSave_Network.setDisabled(False)
+        self.parent.ui.actionSet_Constraints.setDisabled(False)
+        self.parent.ui.actionDisplay_Routers.setDisabled(False)
+        self.parent.ui.actionDisplay_Latest_Path.setDisabled(False)
+        self.parent.ui.actionHide_Latest_Path.setDisabled(False)
         
         self.display_routers()
         self.graphics_handler.update_graphics(self.network)
+    
+    def display_routers_clicked(self):
+        self.display_routers()
+    
+    def set_constraints_clicked(self):
+        dialog = ConstraintSetter()
+        
+        if not dialog.exec():
+            return
+        
+        data = dialog.get_data()
+        
+        validation_result = ""
+        
+        source_router = self.network.get_router_by_id(data["source"])
+        destination_router = self.network.get_router_by_id(data["destination"])
+        
+        if source_router is None:
+            validation_result += "Source router does not exist.\n"
+            
+        if destination_router is None:
+            validation_result += "Destination router does not exist.\n"
+        
+        if source_router is not None and destination_router is not None:
+            if data["source"] == data["destination"]:
+                validation_result += "Source and destination routers must be different.\n"
+            
+            if not source_router.firewall_enabled and data["firewall_required"]:
+                validation_result += "Source router does not have a firewall enabled.\n"
+            
+            if not destination_router.firewall_enabled and data["firewall_required"]:
+                validation_result += "Destination router does not have a firewall enabled.\n"
+                
+            if source_router.security_level < data["security_requirement"]:
+                validation_result += "Source router does not meet the security requirement.\n"
+            
+            if destination_router.security_level < data["security_requirement"]:
+                validation_result += "Destination router does not meet the security requirement.\n"
+        
+        if validation_result != "":
+            self.parent.ui.textBrowser.setText(validation_result)
+            return
+        
+        self.builder = ModelBuilder(self.network, data["security_requirement"], data["firewall_required"])
+        self.builder.set_source(data["source"])
+        self.builder.set_destination(data["destination"])
+        
+        self.parent.ui.textBrowser.setText("Constraints set successfully.")
+        self.parent.ui.find_route_button.setDisabled(False)
+        self.parent.ui.actionFind_Route.setDisabled(False)
+    
+    def find_route_clicked(self):
+        if self.builder is None:
+            self.parent.ui.textBrowser.setText("No constraints set.")
+            return
+        
+        self.builder.build_model()
+        
+        self.solver = ModelSolver(self.builder)
+        
+        path = self.solver.create_path()
+        
+        if path is None:
+            alert = QMessageBox.information(self.parent, "Warning", "No path could be found with the given constraints.")
+        else:
+            self.parent.latest_path = path
+            self.parent.ui.textBrowser.setText(f"Path found:\n{path}\nWith a total cost of {path.path_cost()}")
+            self.graphics_handler.update_graphics(self.network, path)
+            alert = QMessageBox.information(self.parent, "Success", f"Path found with a total cost of {path.path_cost()}")
+    
+    def display_latest_path_clicked(self):
+        path = self.parent.latest_path
+        
+        if path is None:
+            self.parent.ui.textBrowser.setText("No path has been found yet.")
+            return
+        
+        self.parent.ui.textBrowser.setText(f"Path found:\n{path}\nWith a total cost of {path.path_cost()}")
+        self.graphics_handler.update_graphics(self.network, path)
+    
+    def hide_latest_path_clicked(self):
+        self.graphics_handler.update_graphics(self.network, None)

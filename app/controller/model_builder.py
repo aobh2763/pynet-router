@@ -35,7 +35,7 @@ class ModelBuilder():
         self.firewall_required = firewall_required
         self.source = None
         self.destination = None
-        self.model = Model("Routing")
+        self.model = None
     
     def set_source(self, source_id: int) -> bool:
         """Sets the source router if it meets the security and firewall requirements.
@@ -104,6 +104,9 @@ class ModelBuilder():
         link: Link
         vars = {}
         obj_fun = 0
+        
+        # Reset model
+        self.model = Model("Routing")
         
         # Creating the variables
         for router in self.network.routers:

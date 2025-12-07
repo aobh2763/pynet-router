@@ -19,6 +19,8 @@ class ModelSolver():
         """
         self.model_builder = builder
         self.model = builder.model
+        
+        self.model.optimize()
     
     def create_path(self) -> Path | None:
         """Creates a path from the optimized model if one exists.
@@ -29,53 +31,43 @@ class ModelSolver():
         if self.model.Status != GRB.OPTIMAL or self.model.ObjVal == 0:
             return None
 
-        adj = {}
-        edges = []
-
+        used_edges = {}
         for var in self.model.getVars():
-            if var.X == 1.0:
-                a, b = var.VarName.split("-")
-                u = int(a[1:])
-                v = int(b)
-
-                adj.setdefault(u, set()).add(v)
-                adj.setdefault(v, set()).add(u)
-
-                edges.append((u, v))
+            if var.X > 0.5:
+                a, b = var.VarName[1:].split("-")
+                u, v = int(a), int(b)
+                used_edges.setdefault(u, []).append(v)
 
         src = self.model_builder.source.id
         dst = self.model_builder.destination.id
 
-        if src not in adj or dst not in adj:
-            return None
-
-        path_links = []
-        visited = set([src])
+        path_nodes = [src]
         current = src
 
         while current != dst:
-            neighbors = adj.get(current, set())
-            next_nodes = [n for n in neighbors if n not in visited]
-
-            if not next_nodes:
+            if current not in used_edges or not used_edges[current]:
                 return None
 
-            nxt = next_nodes[0]
-            
+            nxt = used_edges[current].pop(0)
             link = self.model_builder.network.get_link(current, nxt)
             if link is None:
                 link = self.model_builder.network.get_link(nxt, current)
+            if link is None:
+                return None
 
-            path_links.append(link)
-            visited.add(nxt)
+            path_nodes.append(nxt)
             current = nxt
-            
-        path = self.model_builder.network.create_path(
+
+        path_links = []
+        for i in range(len(path_nodes) - 1):
+            u, v = path_nodes[i], path_nodes[i + 1]
+            link = self.model_builder.network.get_link(u, v)
+            path_links.append(link)
+
+        return self.model_builder.network.create_path(
             self.model_builder.source,
             self.model_builder.destination,
             self.model_builder.security_requirement,
             self.model_builder.firewall_required,
             path_links
         )
-        
-        return path
