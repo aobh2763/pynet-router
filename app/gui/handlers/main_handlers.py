@@ -4,6 +4,7 @@ from ..router_selector import RouterSelector
 from ..router_editor import RouterEditor
 from ..router_linker import RouterLinker
 from ..constraint_setter import ConstraintSetter
+from ..variable_viewer import VariableViewer
 
 from .path_finder_thread import PathFinderThread
 
@@ -83,6 +84,7 @@ class MainHandlers:
         self.parent.ui.actionFind_Route.setDisabled(True)
         self.parent.ui.actionDisplay_Routers.setDisabled(False)
         self.parent.ui.actionDisplay_Latest_Path.setDisabled(False)
+        self.parent.ui.actionView_Variables.setDisabled(False)
         self.parent.ui.actionHide_Latest_Path.setDisabled(False)
         
     def add_router_clicked(self):
@@ -256,6 +258,7 @@ class MainHandlers:
         self.parent.ui.actionSet_Constraints.setDisabled(False)
         self.parent.ui.actionDisplay_Routers.setDisabled(False)
         self.parent.ui.actionDisplay_Latest_Path.setDisabled(False)
+        self.parent.ui.actionView_Variables.setDisabled(False)
         self.parent.ui.actionHide_Latest_Path.setDisabled(False)
         
         self.display_routers()
@@ -324,9 +327,11 @@ class MainHandlers:
         self.thread.finished.connect(self.on_path_found)
         self.thread.start()
 
-    def on_path_found(self, path):
+    def on_path_found(self, solver, path):
         self.parent.ui.find_route_button.setDisabled(False)
         self.parent.ui.actionFind_Route.setDisabled(False)
+        
+        self.solver = solver
         
         if path is None:
             QMessageBox.information(self.parent, "Warning", "No path could be found with the given constraints.")
@@ -349,3 +354,13 @@ class MainHandlers:
     
     def hide_latest_path_clicked(self):
         self.graphics_handler.update_graphics(self.network, None)
+    
+    def view_variables_clicked(self):
+        path = self.parent.latest_path
+        
+        if path is None:
+            self.parent.ui.textBrowser.setText("No path has been found yet.")
+            return
+
+        viewer = VariableViewer(self.solver.model)
+        viewer.exec()

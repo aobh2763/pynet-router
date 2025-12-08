@@ -41,6 +41,7 @@ class MainWindow(QMainWindow):
         self.ui.actionNew_Network.triggered.connect(self.handlers.new_network_clicked)
         self.ui.actionDisplay_Routers.triggered.connect(self.handlers.display_routers_clicked)
         self.ui.actionDisplay_Latest_Path.triggered.connect(self.handlers.display_latest_path_clicked)
+        self.ui.actionView_Variables.triggered.connect(self.handlers.view_variables_clicked)
         self.ui.actionHide_Latest_Path.triggered.connect(self.handlers.hide_latest_path_clicked)
         self.ui.actionSet_Constraints.triggered.connect(self.handlers.set_constraints_clicked)
         self.ui.actionFind_Route.triggered.connect(self.handlers.find_route_clicked)
@@ -64,6 +65,7 @@ class MainWindow(QMainWindow):
         self.ui.actionFind_Route.setDisabled(True)
         self.ui.actionDisplay_Routers.setDisabled(True)
         self.ui.actionDisplay_Latest_Path.setDisabled(True)
+        self.ui.actionView_Variables.setDisabled(True)
         self.ui.actionHide_Latest_Path.setDisabled(True)
     
     def closeEvent(self, event):
